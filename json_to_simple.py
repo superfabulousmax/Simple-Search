@@ -8,13 +8,12 @@ It also culls documents with similar repeated content.
 
 import os
 import json
-import pprint
-
 ### Document requirements
 
 MIN_WORD_LENGTH = 200
 MAX_WORD_LENGTH = 2000
 COLLECTION_SIZE = 30
+COLLECTION_NAME = "testbed/emotions_collection"
 
 ### Methods
 
@@ -47,14 +46,38 @@ def open_json_file(filename):
                 if word_count < 200 or word_count > 2000:
                     continue
                 else:
-                    new_data.append(j_data)
+                    new_data.append(items[i])
             for n in new_data:
                 print (n)
-            print(len(new_data))
-
+            print(str(len(new_data))+ " items extracted")
+            return new_data
 
     else:
         print("Could not find "+filename)
+        return []
 
-open_json_file("extracted.json")
+'''
+Format: 
+.I 1
+.T 
+one apple
+.W 
+apple
+'''
+def write_to_simple_format(data):
+    with open(COLLECTION_NAME, "a") as collection_file:
+        int_id = 1
+        for i in data:
+            j_data = json.loads(i)
+            content = j_data["content"].encode("utf-8") # there are some Greek letters that need to be encoded before writing to file
+            id = j_data['id']
+            title = j_data['title']
+
+            collection_file.write(".I "+str(int_id)+"\n")
+            collection_file.write(".T\n" + title + "\n")
+            collection_file.write(".W\n" + str(content) + "\n")
+            int_id += 1
+    collection_file.close()
+
+write_to_simple_format(open_json_file("extracted.json"))
 
