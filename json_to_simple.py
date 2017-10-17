@@ -13,7 +13,7 @@ import json
 MIN_WORD_LENGTH = 200
 MAX_WORD_LENGTH = 2000
 COLLECTION_SIZE = 30
-COLLECTION_NAME = "testbed/emotions_collection"
+COLLECTION_NAME = "testbed/emotions_collection2"
 
 ### Methods
 
@@ -69,14 +69,15 @@ def write_to_simple_format(data):
         int_id = 1
         for i in data:
             j_data = json.loads(i)
-            content = j_data["content"].encode("utf-8") # there are some Greek letters that need to be encoded before writing to file
-            id = j_data['id']
-            title = j_data['title']
+            content = str(j_data["content"].encode("utf-8")) # there are some Greek letters that need to be encoded before writing to file
+            id = j_data["id"]
+            title = j_data["title"]
 
             collection_file.write(".I "+str(int_id)+"\n")
             collection_file.write(".T\n" + title + "\n")
-            collection_file.write(".W\n" + str(content) + "\n")
+            collection_file.write(".W\n" + content[2:len(content)-1] + "\n") # remove b' and last '
             int_id += 1
+        collection_file.write(".I " + str(int_id) + "\n") # the cranfield format seems to expect an extra id at bottom
     collection_file.close()
 
 write_to_simple_format(open_json_file("extracted.json"))

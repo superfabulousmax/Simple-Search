@@ -64,7 +64,7 @@ N = len (data.keys())
 p = porter.PorterStemmer ()
 for key in data:
     content = re.sub (r'[^ a-zA-Z0-9]', ' ', data[key])
-    content = re.sub (r'\s+', ' ', content)
+    content = re.sub (r'\s+', ' ', content) # get rid of extra spaces beyond one.
     words = content.split (' ')
     doc_length = 0
     for word in words:
