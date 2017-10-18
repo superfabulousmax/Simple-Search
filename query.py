@@ -11,6 +11,8 @@ import porter
 
 import parameters
 
+import py_thesaurus # to use synonyms at query time
+
 # check parameter for collection name
 if len(sys.argv)<3:
    print ("Syntax: query.py <collection> <query>")
@@ -30,6 +32,17 @@ if parameters.case_folding:
 query = re.sub (r'[^ a-zA-Z0-9]', ' ', query)
 query = re.sub (r'\s+', ' ', query)
 query_words = query.split (' ')
+
+# Check if using thesaurus
+if parameters.use_thesaurus:
+    thesaurus = py_thesaurus.WordAnalyzer("")
+    synonyms = thesaurus.get_synonym()
+    # ignore synonyms that are more than one word long
+    allowed_synonyms = []
+    for s in synonyms:
+        if(len(s.split) == 1):
+            allowed_synonyms.append(s)
+    query_words.extend(allowed_synonyms) # list of synonyms for a word
 
 # create accumulators and other data structures
 accum = {}
