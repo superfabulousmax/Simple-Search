@@ -39,15 +39,21 @@ def main(q_id, collection_name, query_text):
     # Up of many words into their constituent words
     # Might not make sense as a synonym.
     # Particularly since the system search on term basis and not a phrase basis
+
     if parameters.use_thesaurus:
-        thesaurus = py_thesaurus.WordAnalyzer("")
-        synonyms = thesaurus.get_synonym()
-        # ignore synonyms that are more than one word long
-        allowed_synonyms = []
-        for s in synonyms:
-            if(len(s.split) == 1):
-                allowed_synonyms.append(s)
-        query_words.extend(allowed_synonyms) # list of synonyms for a word
+        added_synonyms = []
+        for term in query_words:
+            thesaurus = py_thesaurus.WordAnalyzer(term)
+            synonyms = thesaurus.get_synonym()
+            # ignore synonyms that are more than one word long
+            allowed_synonyms = []
+            for s in synonyms:
+                if(len(s.split(" ")) == 1):
+                    allowed_synonyms.append(s)
+            for s in allowed_synonyms:
+                if s not in added_synonyms:
+                    added_synonyms.append(s)
+        query_words.extend(added_synonyms) # list of synonyms for a word
 
     # create accumulators and other data structures
     accum = {}

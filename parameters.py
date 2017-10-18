@@ -7,5 +7,5 @@ stemming = False
 case_folding = True
 log_tf = True
 use_idf = True
-use_thesaurus = False # Feature I am adding
+use_thesaurus = True # Feature I am adding
 log_idf = True
