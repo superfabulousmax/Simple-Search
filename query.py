@@ -129,7 +129,7 @@ def main(q_id, collection_name, query_text):
         with open(output, "a") as f:
             for i in range(min(len(result), MIN_RESULT_LENGTH)):
                 # <query-id> <literal '0'> <document-id> <rank> <score> <run-id>
-                f.write(str(query_id) + " 0 " + str(result[i]) + str(i) + str(accum[result[i]]) + " " + run_id+"\n")
+                f.write(str(query_id) + " 0 " + str(result[i]) + " " + str(i) + " " + str(accum[result[i]]) + " " + run_id+"\n")
         f.close()
 
     write_to_result_file(result, query_id)
