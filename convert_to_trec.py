@@ -1,3 +1,7 @@
+'''
+Converts relevance judgements to trec format
+'''
+
 import os
 
 # Trec relevance format:
