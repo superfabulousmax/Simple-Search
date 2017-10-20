@@ -42,6 +42,11 @@ class relevance:
     def __str__(self):
         return str(self.query_id) + " " + str(self.doc_id) + " " + str(self.rel_value)
 
+    def get_relevance(self, run_obj):
+        if run_obj.query_id == self.query_id and run_obj.doc_id == self.doc_id:
+            return self.rel_value
+        return -1
+
 
 relevance_judgements = []
 control_run = []
@@ -85,4 +90,51 @@ def readfiles(filenames, runfiles):
 
 readfiles([TARGET_DIR+"control_results.txt", TARGET_DIR+"thesaurus_results.txt"], True)
 readfiles([TARGET_DIR+"trec_relevance_judgements.txt"], False)
+
+def get_number_relevant_and_retrieved(run_objs, rel_objs, q_id):
+    count = 0
+    for i in run_objs:
+        for j in rel_objs:
+            if i.query_id == q_id and j.query_id == q_id:
+                if j.get_relevance(i) >= 1:
+                    count = count + 1
+    return count
+
+'''
+Calculates Precison for all the queries.
+Precision is the fraction of retrieved documents that are relevant to the query.
+Take in flag to indicate if control or not
+Threshold for relevant document is geq to 1.
+'''
+def calculate_precision(iscontrol):
+    precision_per_q_dic = {}
+    if(iscontrol):
+        for obj in control_run:
+            qid = obj.query_idS
+            if qid not in precision_per_q_dic.keys():
+                num_retrieved = 0
+                for i in control_run:
+                    if i.query_id == obj.query_id:
+                        num_retrieved += num_retrieved + 1
+                denom = get_number_relevant_and_retrieved(control_run, relevance_judgements, qid)
+                if denom > 0:
+                    precision_per_q_dic[qid] = num_retrieved / denom
+                else:
+                    precision_per_q_dic[qid] = 0
+    else:
+        for obj in thes_run:
+            qid = obj.query_idS
+            if qid not in precision_per_q_dic.keys():
+                num_retrieved = 0
+                for i in thes_run:
+                    if i.query_id == obj.query_id:
+                        num_retrieved += num_retrieved + 1
+                denom = get_number_relevant_and_retrieved(thes_run, relevance_judgements, qid)
+                if denom > 0:
+                    precision_per_q_dic[qid] = num_retrieved / denom
+                else:
+                    precision_per_q_dic[qid] = 0
+    return precision_per_q_dic
+
+
 
