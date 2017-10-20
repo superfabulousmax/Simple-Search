@@ -15,7 +15,7 @@ import py_thesaurus # to use synonyms at query time
 
 def main(q_id, collection_name, query_text):
     print(q_id + " " + collection_name+ " " + query_text)
-    MIN_RESULT_LENGTH = 10
+    MIN_RESULT_LENGTH = 30
     OUT_DIR = "testbed/"
     RESULT_FILE = "control_results.txt"
     if parameters.use_thesaurus:
