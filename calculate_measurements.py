@@ -17,9 +17,9 @@ class run:
     run_id = "none"
 
     def __init__(self, query_id, doc_id, rank, score, run_id):
-        self.query_id = query_id
-        self.doc_id = doc_id
-        self.rank = rank
+        self.query_id = int(query_id)
+        self.doc_id = int(doc_id)
+        self.rank = int(rank)
         self.score = score
         self.run_id = run_id
 
@@ -35,9 +35,9 @@ class relevance:
     rel_value = -1
 
     def __init__(self, query_id, doc_id, rel_value):
-        self.query_id = query_id
-        self.doc_id = doc_id
-        self.rel_value = rel_value
+        self.query_id = int(query_id)
+        self.doc_id = int(doc_id)
+        self.rel_value = int(rel_value)
 
     def __str__(self):
         return str(self.query_id) + " " + str(self.doc_id) + " " + str(self.rel_value)
@@ -101,7 +101,7 @@ def get_number_relevant_and_retrieved(run_objs, rel_objs, q_id):
     return count
 
 '''
-Calculates Precison for all the queries.
+Calculates Precision for all the queries.
 Precision is the fraction of retrieved documents that are relevant to the query.
 Take in flag to indicate if control or not
 Threshold for relevant document is geq to 1.
@@ -110,31 +110,29 @@ def calculate_precision(iscontrol):
     precision_per_q_dic = {}
     if(iscontrol):
         for obj in control_run:
-            qid = obj.query_idS
+            qid = obj.query_id
             if qid not in precision_per_q_dic.keys():
                 num_retrieved = 0
                 for i in control_run:
-                    if i.query_id == obj.query_id:
-                        num_retrieved += num_retrieved + 1
-                denom = get_number_relevant_and_retrieved(control_run, relevance_judgements, qid)
-                if denom > 0:
-                    precision_per_q_dic[qid] = num_retrieved / denom
-                else:
-                    precision_per_q_dic[qid] = 0
+                    if i.query_id == qid:
+                        num_retrieved += 1
+                numerator = get_number_relevant_and_retrieved(control_run, relevance_judgements, qid)
+                precision_per_q_dic[qid] = numerator / num_retrieved
     else:
         for obj in thes_run:
-            qid = obj.query_idS
+            qid = obj.query_id
             if qid not in precision_per_q_dic.keys():
                 num_retrieved = 0
                 for i in thes_run:
-                    if i.query_id == obj.query_id:
-                        num_retrieved += num_retrieved + 1
-                denom = get_number_relevant_and_retrieved(thes_run, relevance_judgements, qid)
-                if denom > 0:
-                    precision_per_q_dic[qid] = num_retrieved / denom
-                else:
-                    precision_per_q_dic[qid] = 0
+                    if i.query_id == qid:
+                        num_retrieved += 1
+                numerator = get_number_relevant_and_retrieved(thes_run, relevance_judgements, qid)
+                print(str(numerator) +" / "+str(num_retrieved))
+                precision_per_q_dic[qid] = numerator / num_retrieved
     return precision_per_q_dic
+
+print(calculate_precision(True))
+print(calculate_precision(False))
 
 
 
