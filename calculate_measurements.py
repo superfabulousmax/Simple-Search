@@ -222,21 +222,22 @@ def get_AP (iscontrol, qid):
         count = 1
         rel_and_ret_count = 0
         for i in control_run:
-            for j in relevance_judgements:
-                if j.get_relevance(i) >= 1:
-                    rel_and_ret_count += 1
-                    ap_list.append(rel_and_ret_count / count)
-            count += 1
+            if(i.query_id == qid):
+                for j in relevance_judgements:
+                    if j.get_relevance(i) >= 1:
+                        rel_and_ret_count += 1
+                        ap_list.append(rel_and_ret_count / count)
+                count += 1
     else:
         count = 1
         rel_and_ret_count = 0
         for i in thes_run:
-            for j in relevance_judgements:
-                if j.get_relevance(i) >= 1:
-                    rel_and_ret_count += 1
-                    ap_list.append(rel_and_ret_count / count)
-            count += 1
-    print(count)
+            if (i.query_id == qid):
+                for j in relevance_judgements:
+                    if j.get_relevance(i) >= 1:
+                        rel_and_ret_count += 1
+                        ap_list.append(rel_and_ret_count / count)
+                count += 1
     return sum(ap_list)/len(ap_list)
 
 def calculate_MAP(iscontrol):
@@ -269,6 +270,10 @@ print(calculate_precision_all(False))
 print(calculate_recall_all(True))
 print(calculate_recall_all(False))
 
+for i in range(1,4):
+    print("AP for q "+str(i))
+    print(get_AP(True, i))
+    print(get_AP(False, i))
 print("MAP")
 print(calculate_MAP(True))
 print(calculate_MAP(False))
