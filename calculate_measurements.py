@@ -5,6 +5,7 @@ Reads from testbed results files.
 
 #imports
 import os
+import math
 
 TARGET_DIR = "testbed/"
 
@@ -213,7 +214,6 @@ def calculate_recall_all(iscontrol):
     else:
         numerator = get_number_relevant_and_retrieved_for_all(thes_run, relevance_judgements, get_all_queries(thes_run))
         recall = numerator / get_number_relevant_for_all(relevance_judgements)
-
     return recall
 
 def get_AP (iscontrol, qid):
@@ -226,7 +226,7 @@ def get_AP (iscontrol, qid):
                 for j in relevance_judgements:
                     if j.get_relevance(i) >= 1:
                         rel_and_ret_count += 1
-                        ap_list.append(rel_and_ret_count / count)
+                    ap_list.append(rel_and_ret_count / count)
                 count += 1
     else:
         count = 1
@@ -236,7 +236,7 @@ def get_AP (iscontrol, qid):
                 for j in relevance_judgements:
                     if j.get_relevance(i) >= 1:
                         rel_and_ret_count += 1
-                        ap_list.append(rel_and_ret_count / count)
+                    ap_list.append(rel_and_ret_count / count)
                 count += 1
     return sum(ap_list)/len(ap_list)
 
@@ -257,25 +257,123 @@ def calculate_MAP(iscontrol):
 
     return map
 
+def get_ideal():
+    newl = sorted(relevance_judgements, key=lambda x: x.rel_value, reverse=True)
+    ideal_query_order = []
+    seen = []
+    # group by query
+    for i in newl:
+        qid = i.query_id
+        if qid not in seen:
+            seen.append(qid)
+            for j in newl:
+                if j.query_id == qid:
+                    ideal_query_order.append(j)
+    return ideal_query_order
+
+def calculate_NDCG(iscontrol, queries):
+
+    NDCG = {}
+    DCG_dic = {}
+    IDCG_dic = {}
+    given_judgements = {}
+    ideal_judgements = {}
+    if(iscontrol):
+        for i in control_run:
+            qid = i.query_id
+            if qid not in given_judgements.keys():
+                judgements = []
+                for r in relevance_judgements:
+                    if r.query_id == qid and r.doc_id == i.doc_id:
+                        judgements.append(r.rel_value)
+                given_judgements[qid] = judgements
+
+        dcg = 0
+        idcg = 0
+        i = 1
+        for q in queries:
+            for rel in given_judgements[q]:
+                dcg += rel / math.log2(i + 1)
+                i += 1
+            DCG_dic[q] = dcg
+            dcg = 0
+            i = 1
+
+        for i in given_judgements.keys():
+            ideal_judgements[i] = sorted(given_judgements, key=lambda x: x, reverse=True)
+
+        i = 1
+        for q in queries:
+            for rel in ideal_judgements[q]:
+                idcg += rel / math.log2(i + 1)
+                i += 1
+            IDCG_dic[q] = idcg
+            idcg
+            i = 1
+        for q in queries:
+            NDCG[q] = DCG_dic[q]/IDCG_dic[q]
+        return NDCG
+    else:
+        for i in thes_run:
+            qid = i.query_id
+            if qid not in given_judgements.keys():
+                judgements = []
+                for r in relevance_judgements:
+                    if r.query_id == qid and r.doc_id == i.doc_id:
+                        judgements.append(r.rel_value)
+                given_judgements[qid] = judgements
+
+        dcg = 0
+        idcg = 0
+        i = 1
+        for q in queries:
+            for rel in given_judgements[q]:
+                dcg += rel / math.log2(i + 1)
+                i += 1
+            DCG_dic[q] = dcg
+            dcg = 0
+            i = 1
+
+        for i in given_judgements.keys():
+            ideal_judgements[i] = sorted(given_judgements, key=lambda x: x, reverse=True)
+
+        i = 1
+        for q in queries:
+            for rel in ideal_judgements[q]:
+                idcg += rel / math.log2(i + 1)
+                i += 1
+            IDCG_dic[q] = idcg
+            idcg = 0
+            i = 1
+        for q in queries:
+            NDCG[q] = DCG_dic[q]/IDCG_dic[q]
+        return NDCG
+
+
+
+
 '''
 print(calculate_precision(True))
 print(calculate_precision(False))
+
 print(calculate_recall(True))
 print(calculate_recall(False))
-'''
+
 print(calculate_precision_all(True))
-
 print(calculate_precision_all(False))
-
 print(calculate_recall_all(True))
 print(calculate_recall_all(False))
 
-for i in range(1,4):
-    print("AP for q "+str(i))
+for i in range(1, 4):
+    print("AP for "+str(i))
     print(get_AP(True, i))
     print(get_AP(False, i))
 print("MAP")
 print(calculate_MAP(True))
 print(calculate_MAP(False))
+'''
+print(calculate_NDCG(True, get_all_queries(control_run)))
+print(calculate_NDCG(False, get_all_queries(thes_run)))
+
 
 
