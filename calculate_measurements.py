@@ -283,11 +283,11 @@ def calculate_NDCG(iscontrol, queries):
             qid = i.query_id
             if qid not in given_judgements.keys():
                 judgements = []
-                for r in relevance_judgements:
-                    if r.query_id == qid and r.doc_id == i.doc_id:
-                        judgements.append(r.rel_value)
+                for j in control_run:
+                    for r in relevance_judgements:
+                        if r.query_id == qid and r.doc_id == j.doc_id:
+                            judgements.append(r.rel_value)
                 given_judgements[qid] = judgements
-
         dcg = 0
         idcg = 0
         i = 1
@@ -300,15 +300,14 @@ def calculate_NDCG(iscontrol, queries):
             i = 1
 
         for i in given_judgements.keys():
-            ideal_judgements[i] = sorted(given_judgements, key=lambda x: x, reverse=True)
-
+            ideal_judgements[i] = sorted(given_judgements[i], key=lambda x: x, reverse=True)
         i = 1
         for q in queries:
             for rel in ideal_judgements[q]:
                 idcg += rel / math.log2(i + 1)
                 i += 1
             IDCG_dic[q] = idcg
-            idcg
+            idcg = 0
             i = 1
         for q in queries:
             NDCG[q] = DCG_dic[q]/IDCG_dic[q]
@@ -318,11 +317,11 @@ def calculate_NDCG(iscontrol, queries):
             qid = i.query_id
             if qid not in given_judgements.keys():
                 judgements = []
-                for r in relevance_judgements:
-                    if r.query_id == qid and r.doc_id == i.doc_id:
-                        judgements.append(r.rel_value)
+                for j in thes_run:
+                    for r in relevance_judgements:
+                        if r.query_id == qid and r.doc_id == j.doc_id:
+                            judgements.append(r.rel_value)
                 given_judgements[qid] = judgements
-
         dcg = 0
         idcg = 0
         i = 1
@@ -335,8 +334,7 @@ def calculate_NDCG(iscontrol, queries):
             i = 1
 
         for i in given_judgements.keys():
-            ideal_judgements[i] = sorted(given_judgements, key=lambda x: x, reverse=True)
-
+            ideal_judgements[i] = sorted(given_judgements[i], key=lambda x: x, reverse=True)
         i = 1
         for q in queries:
             for rel in ideal_judgements[q]:
