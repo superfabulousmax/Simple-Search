@@ -91,13 +91,49 @@ def readfiles(filenames, runfiles):
 readfiles([TARGET_DIR+"control_results.txt", TARGET_DIR+"thesaurus_results.txt"], True)
 readfiles([TARGET_DIR+"trec_relevance_judgements.txt"], False)
 
-def get_number_relevant_and_retrieved(run_objs, rel_objs, q_id):
+def get_all_queries(run_obj):
+    seen = []
+    for obj in run_obj:
+        qid = obj.query_id
+        if qid not in seen:
+            seen.append(qid)
+    return seen
+
+def get_number_retrieved_all(run_obj):
+    return len(run_obj)
+
+def get_number_relevant_and_retrieved_for_qid(run_objs, rel_objs, q_id):
     count = 0
     for i in run_objs:
         for j in rel_objs:
             if i.query_id == q_id and j.query_id == q_id:
                 if j.get_relevance(i) >= 1:
                     count = count + 1
+    return count
+
+def get_number_relevant_for_qid(rel_objs, q_id):
+    count = 0
+    for i in rel_objs:
+        if i.query_id == q_id:
+            if i.get_relevance(i) >= 1:
+                count = count + 1
+    return count
+
+def get_number_relevant_and_retrieved_for_all(run_objs, rel_objs, all_queries):
+    count = 0
+    for i in run_objs:
+        for j in rel_objs:
+            for q in all_queries:
+                if i.query_id == q and j.query_id == q:
+                    if j.get_relevance(i) >= 1:
+                        count = count + 1
+    return count
+
+def get_number_relevant_for_all(rel_objs):
+    count = 0
+    for i in rel_objs:
+        if i.get_relevance(i) >= 1:
+            count = count + 1
     return count
 
 '''
@@ -116,7 +152,7 @@ def calculate_precision(iscontrol):
                 for i in control_run:
                     if i.query_id == qid:
                         num_retrieved += 1
-                numerator = get_number_relevant_and_retrieved(control_run, relevance_judgements, qid)
+                numerator = get_number_relevant_and_retrieved_for_qid(control_run, relevance_judgements, qid)
                 precision_per_q_dic[qid] = numerator / num_retrieved
     else:
         for obj in thes_run:
@@ -126,13 +162,115 @@ def calculate_precision(iscontrol):
                 for i in thes_run:
                     if i.query_id == qid:
                         num_retrieved += 1
-                numerator = get_number_relevant_and_retrieved(thes_run, relevance_judgements, qid)
-                print(str(numerator) +" / "+str(num_retrieved))
+                numerator = get_number_relevant_and_retrieved_for_qid(thes_run, relevance_judgements, qid)
                 precision_per_q_dic[qid] = numerator / num_retrieved
     return precision_per_q_dic
 
+def calculate_recall(iscontrol):
+    recall_per_q_dic = {}
+    if (iscontrol):
+        for obj in control_run:
+            qid = obj.query_id
+            if qid not in recall_per_q_dic.keys():
+                num_retrieved = 0
+                for i in control_run:
+                    if i.query_id == qid:
+                        num_retrieved += 1
+                numerator = get_number_relevant_and_retrieved_for_qid(control_run, relevance_judgements, qid)
+                denominator = get_number_relevant_for_qid(relevance_judgements, qid)
+                recall_per_q_dic[qid] = numerator / denominator
+    else:
+        for obj in thes_run:
+            qid = obj.query_id
+            if qid not in recall_per_q_dic.keys():
+                num_retrieved = 0
+                for i in thes_run:
+                    if i.query_id == qid:
+                        num_retrieved += 1
+                numerator = get_number_relevant_and_retrieved_for_qid(thes_run, relevance_judgements, qid)
+                denominator = get_number_relevant_for_qid(relevance_judgements, qid)
+                recall_per_q_dic[qid] = numerator / denominator
+    return recall_per_q_dic
+
+def calculate_precision_all(iscontrol):
+    precision = 0
+    if (iscontrol):
+        num_retrieved = get_number_retrieved_all(control_run)
+        numerator = get_number_relevant_and_retrieved_for_all(control_run, relevance_judgements, get_all_queries(control_run))
+        precision = numerator/num_retrieved
+    else:
+        num_retrieved = get_number_retrieved_all(thes_run)
+        numerator = get_number_relevant_and_retrieved_for_all(thes_run, relevance_judgements, get_all_queries(thes_run))
+        precision = numerator / num_retrieved
+
+    return precision
+
+def calculate_recall_all(iscontrol):
+    recall = 0
+    if (iscontrol):
+        numerator = get_number_relevant_and_retrieved_for_all(control_run, relevance_judgements, get_all_queries(control_run))
+        recall = numerator/get_number_relevant_for_all(relevance_judgements)
+    else:
+        numerator = get_number_relevant_and_retrieved_for_all(thes_run, relevance_judgements, get_all_queries(thes_run))
+        recall = numerator / get_number_relevant_for_all(relevance_judgements)
+
+    return recall
+
+def get_AP (iscontrol, qid):
+    ap_list = []
+    if (iscontrol):
+        count = 1
+        rel_and_ret_count = 0
+        for i in control_run:
+            for j in relevance_judgements:
+                if j.get_relevance(i) >= 1:
+                    rel_and_ret_count += 1
+                    ap_list.append(rel_and_ret_count / count)
+            count += 1
+    else:
+        count = 1
+        rel_and_ret_count = 0
+        for i in thes_run:
+            for j in relevance_judgements:
+                if j.get_relevance(i) >= 1:
+                    rel_and_ret_count += 1
+                    ap_list.append(rel_and_ret_count / count)
+            count += 1
+    print(count)
+    return sum(ap_list)/len(ap_list)
+
+def calculate_MAP(iscontrol):
+    map = 0
+    queries = get_all_queries(control_run)
+    if (iscontrol):
+        numerator = 0
+        for q in queries:
+            numerator += get_AP(True, q)
+        map = numerator/len(queries)
+    else:
+        queries = get_all_queries(thes_run)
+        numerator = 0
+        for q in queries:
+            numerator += get_AP(False, q)
+        map = numerator / len(queries)
+
+    return map
+
+'''
 print(calculate_precision(True))
 print(calculate_precision(False))
+print(calculate_recall(True))
+print(calculate_recall(False))
+'''
+print(calculate_precision_all(True))
 
+print(calculate_precision_all(False))
+
+print(calculate_recall_all(True))
+print(calculate_recall_all(False))
+
+print("MAP")
+print(calculate_MAP(True))
+print(calculate_MAP(False))
 
 
