@@ -285,9 +285,11 @@ def calculate_NDCG(iscontrol, queries):
                 judgements = []
                 for j in control_run:
                     for r in relevance_judgements:
-                        if r.query_id == qid and r.doc_id == j.doc_id:
+                        if r.query_id == qid and qid == j.query_id and r.doc_id == j.doc_id:
                             judgements.append(r.rel_value)
+
                 given_judgements[qid] = judgements
+        print(given_judgements)
         dcg = 0
         idcg = 0
         i = 1
@@ -299,8 +301,9 @@ def calculate_NDCG(iscontrol, queries):
             dcg = 0
             i = 1
 
-        for i in given_judgements.keys():
-            ideal_judgements[i] = sorted(given_judgements[i], key=lambda x: x, reverse=True)
+        for j in given_judgements.keys():
+            ideal_judgements[j] = sorted(given_judgements[j], key=lambda x: x, reverse=True)
+        print(ideal_judgements)
         i = 1
         for q in queries:
             for rel in ideal_judgements[q]:
@@ -319,7 +322,7 @@ def calculate_NDCG(iscontrol, queries):
                 judgements = []
                 for j in thes_run:
                     for r in relevance_judgements:
-                        if r.query_id == qid and r.doc_id == j.doc_id:
+                        if r.query_id == qid and qid == j.query_id and r.doc_id == j.doc_id:
                             judgements.append(r.rel_value)
                 given_judgements[qid] = judgements
         dcg = 0
@@ -333,8 +336,8 @@ def calculate_NDCG(iscontrol, queries):
             dcg = 0
             i = 1
 
-        for i in given_judgements.keys():
-            ideal_judgements[i] = sorted(given_judgements[i], key=lambda x: x, reverse=True)
+        for j in given_judgements.keys():
+            ideal_judgements[j] = sorted(given_judgements[j], key=lambda x: x, reverse=True)
         i = 1
         for q in queries:
             for rel in ideal_judgements[q]:
