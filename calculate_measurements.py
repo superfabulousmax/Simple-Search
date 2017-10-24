@@ -352,6 +352,8 @@ control_MAP = calculate_MAP(True)
 thes_MAP = calculate_MAP(False)
 control_NDCG = calculate_NDCG(True, all_queries)
 thes_NDCG = calculate_NDCG(False, get_all_queries(thes_run))
+control_NDCG_All = sum(control_NDCG.values())/len(control_NDCG)
+thes_NDCG_All = sum(thes_NDCG.values())/len(thes_NDCG)
 
 # Print results nicely
 print("Precision")
@@ -377,3 +379,7 @@ for q in control_NDCG:
     print("{}\t\t{:f}".format(q, control_NDCG[q])+"\t{:f}".format(thes_NDCG[q]))
 print()
 
+print("NDCG All")
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+print("All\t\t{:f}".format(control_NDCG_All)+"\t{:f}".format(thes_NDCG_All))
+print()
