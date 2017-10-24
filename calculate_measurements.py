@@ -6,6 +6,7 @@ Reads from testbed results files.
 #imports
 import os
 import math
+import pandas
 
 TARGET_DIR = "testbed/"
 
@@ -289,7 +290,7 @@ def calculate_NDCG(iscontrol, queries):
                             judgements.append(r.rel_value)
 
                 given_judgements[qid] = judgements
-        print(given_judgements)
+
         dcg = 0
         idcg = 0
         i = 1
@@ -303,7 +304,7 @@ def calculate_NDCG(iscontrol, queries):
 
         for j in given_judgements.keys():
             ideal_judgements[j] = sorted(given_judgements[j], key=lambda x: x, reverse=True)
-        print(ideal_judgements)
+
         i = 1
         for q in queries:
             for rel in ideal_judgements[q]:
@@ -350,31 +351,39 @@ def calculate_NDCG(iscontrol, queries):
             NDCG[q] = DCG_dic[q]/IDCG_dic[q]
         return NDCG
 
+# Save calculated into dics per algorithm
+all_queries = get_all_queries(control_run)
+control_precision = calculate_precision(True)
+thes_precision = calculate_precision(False)
+control_recall = calculate_recall(True)
+thes_recall = calculate_recall(False)
+control_MAP = calculate_MAP(True)
+thes_MAP = calculate_MAP(False)
+control_NDCG = calculate_NDCG(True, all_queries)
+thes_NDCG = calculate_NDCG(False, get_all_queries(thes_run))
 
+# Print results nicely
 
+print("Precision")
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+for q in control_precision:
+    print("{}\t\t{:f}".format(q, control_precision[q])+"\t{:f}".format(thes_precision[q]))
+print()
 
-'''
-print(calculate_precision(True))
-print(calculate_precision(False))
+print("Recall")
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+for q in control_recall:
+    print("{}\t\t{:f}".format(q, control_recall[q])+"\t{:f}".format(thes_recall[q]))
+print()
 
-print(calculate_recall(True))
-print(calculate_recall(False))
-
-print(calculate_precision_all(True))
-print(calculate_precision_all(False))
-print(calculate_recall_all(True))
-print(calculate_recall_all(False))
-
-for i in range(1, 4):
-    print("AP for "+str(i))
-    print(get_AP(True, i))
-    print(get_AP(False, i))
 print("MAP")
-print(calculate_MAP(True))
-print(calculate_MAP(False))
-'''
-print(calculate_NDCG(True, get_all_queries(control_run)))
-print(calculate_NDCG(False, get_all_queries(thes_run)))
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+print("All\t\t{:f}".format( control_MAP)+"\t{:f}".format(thes_MAP))
+print()
 
-
+print("NDCG")
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+for q in control_NDCG:
+    print("{}\t\t{:f}".format(q, control_NDCG[q])+"\t{:f}".format(thes_NDCG[q]))
+print()
 
