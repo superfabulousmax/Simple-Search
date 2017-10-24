@@ -258,27 +258,22 @@ def calculate_MAP(iscontrol):
 
     return map
 
-def get_ideal():
-    newl = sorted(relevance_judgements, key=lambda x: x.rel_value, reverse=True)
-    ideal_query_order = []
-    seen = []
-    # group by query
-    for i in newl:
-        qid = i.query_id
-        if qid not in seen:
-            seen.append(qid)
-            for j in newl:
-                if j.query_id == qid:
-                    ideal_query_order.append(j)
-    return ideal_query_order
+def get_ideal_judgements_perq(queries):
+    ideal_judgements = {}
+    for q in queries:
+        judgements = []
+        for r in relevance_judgements:
+            if r.query_id == q:
+                judgements.append(r.rel_value)
+        ideal_judgements[q] = sorted(judgements, key=lambda x: x, reverse=True)
+    return ideal_judgements
 
 def calculate_NDCG(iscontrol, queries):
-
     NDCG = {}
     DCG_dic = {}
     IDCG_dic = {}
     given_judgements = {}
-    ideal_judgements = {}
+    ideal_judgements = get_ideal_judgements_perq(queries)
     if(iscontrol):
         for i in control_run:
             qid = i.query_id
@@ -302,9 +297,6 @@ def calculate_NDCG(iscontrol, queries):
             dcg = 0
             i = 1
 
-        for j in given_judgements.keys():
-            ideal_judgements[j] = sorted(given_judgements[j], key=lambda x: x, reverse=True)
-
         i = 1
         for q in queries:
             for rel in ideal_judgements[q]:
@@ -316,6 +308,7 @@ def calculate_NDCG(iscontrol, queries):
         for q in queries:
             NDCG[q] = DCG_dic[q]/IDCG_dic[q]
         return NDCG
+
     else:
         for i in thes_run:
             qid = i.query_id
@@ -337,8 +330,6 @@ def calculate_NDCG(iscontrol, queries):
             dcg = 0
             i = 1
 
-        for j in given_judgements.keys():
-            ideal_judgements[j] = sorted(given_judgements[j], key=lambda x: x, reverse=True)
         i = 1
         for q in queries:
             for rel in ideal_judgements[q]:
@@ -363,7 +354,6 @@ control_NDCG = calculate_NDCG(True, all_queries)
 thes_NDCG = calculate_NDCG(False, get_all_queries(thes_run))
 
 # Print results nicely
-
 print("Precision")
 print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
 for q in control_precision:
