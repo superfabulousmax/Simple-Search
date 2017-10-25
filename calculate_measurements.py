@@ -382,6 +382,12 @@ print()
 
 print("MAP")
 print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+for q in all_queries:
+    print("{}\t\t{:f}".format(q, get_AP(True, q))+"\t{:f}".format(get_AP(False, q)))
+print()
+
+print("MAP All")
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
 print("All\t\t{:f}".format( control_MAP)+"\t{:f}".format(thes_MAP))
 print()
 
