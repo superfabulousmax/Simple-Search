@@ -138,6 +138,12 @@ def get_number_relevant_for_all(rel_objs):
             count = count + 1
     return count
 
+def get_num_retrieved_for_qid(run_objs, qid):
+    num_retrieved = 0
+    for obj in run_objs:
+        if obj.query_id == qid:
+            num_retrieved += 1
+    return num_retrieved
 '''
 Calculates Precision for all the queries.
 Precision is the fraction of retrieved documents that are relevant to the query.
@@ -150,21 +156,14 @@ def calculate_precision(iscontrol):
         for obj in control_run:
             qid = obj.query_id
             if qid not in precision_per_q_dic.keys():
-                num_retrieved = 0
-                for i in control_run:
-                    if i.query_id == qid:
-                        num_retrieved += 1
+                num_retrieved = get_num_retrieved_for_qid(control_run, qid)
                 numerator = get_number_relevant_and_retrieved_for_qid(control_run, relevance_judgements, qid)
-
                 precision_per_q_dic[qid] = numerator / num_retrieved
     else:
         for obj in thes_run:
             qid = obj.query_id
             if qid not in precision_per_q_dic.keys():
-                num_retrieved = 0
-                for i in thes_run:
-                    if i.query_id == qid:
-                        num_retrieved += 1
+                num_retrieved = get_num_retrieved_for_qid(thes_run, qid)
                 numerator = get_number_relevant_and_retrieved_for_qid(thes_run, relevance_judgements, qid)
                 precision_per_q_dic[qid] = numerator / num_retrieved
     return precision_per_q_dic
@@ -175,10 +174,6 @@ def calculate_recall(iscontrol):
         for obj in control_run:
             qid = obj.query_id
             if qid not in recall_per_q_dic.keys():
-                num_retrieved = 0
-                for i in control_run:
-                    if i.query_id == qid:
-                        num_retrieved += 1
                 numerator = get_number_relevant_and_retrieved_for_qid(control_run, relevance_judgements, qid)
                 denominator = get_number_relevant_for_qid(relevance_judgements, qid)
                 recall_per_q_dic[qid] = numerator / denominator
@@ -186,13 +181,8 @@ def calculate_recall(iscontrol):
         for obj in thes_run:
             qid = obj.query_id
             if qid not in recall_per_q_dic.keys():
-                num_retrieved = 0
-                for i in thes_run:
-                    if i.query_id == qid:
-                        num_retrieved += 1
                 numerator = get_number_relevant_and_retrieved_for_qid(thes_run, relevance_judgements, qid)
                 denominator = get_number_relevant_for_qid(relevance_judgements, qid)
-
                 recall_per_q_dic[qid] = numerator / denominator
     return recall_per_q_dic
 
@@ -243,7 +233,6 @@ def get_AP (iscontrol, qid):
                             rel_and_ret_count += 1
                         ap_list.append(rel_and_ret_count / count)
                 count += 1
-        print(len(ap_list))
     return sum(ap_list)/len(ap_list)
 
 def calculate_MAP(iscontrol):
@@ -361,6 +350,12 @@ control_NDCG_All = sum(control_NDCG.values())/len(control_NDCG)
 thes_NDCG_All = sum(thes_NDCG.values())/len(thes_NDCG)
 
 # Print results nicely
+print("Number Retrieved")
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+for q in all_queries:
+    print("{}\t\t{}".format(q, get_num_retrieved_for_qid(control_run,q))+"\t\t\t{}".format(get_num_retrieved_for_qid(thes_run, q)))
+print()
+
 print("Number Relevant")
 print("{}\t{}".format("Query", "Number"))
 for q in all_queries:
