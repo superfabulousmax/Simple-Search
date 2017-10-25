@@ -108,7 +108,7 @@ def get_number_relevant_and_retrieved_for_qid(run_objs, rel_objs, q_id):
     count = 0
     for i in run_objs:
         for j in rel_objs:
-            if i.query_id == q_id and j.query_id == q_id:
+            if i.query_id == q_id and j.query_id == q_id and j.doc_id == i.doc_id:
                 if j.get_relevance(i) >= 1:
                     count = count + 1
     return count
@@ -155,6 +155,7 @@ def calculate_precision(iscontrol):
                     if i.query_id == qid:
                         num_retrieved += 1
                 numerator = get_number_relevant_and_retrieved_for_qid(control_run, relevance_judgements, qid)
+
                 precision_per_q_dic[qid] = numerator / num_retrieved
     else:
         for obj in thes_run:
@@ -191,6 +192,7 @@ def calculate_recall(iscontrol):
                         num_retrieved += 1
                 numerator = get_number_relevant_and_retrieved_for_qid(thes_run, relevance_judgements, qid)
                 denominator = get_number_relevant_for_qid(relevance_judgements, qid)
+
                 recall_per_q_dic[qid] = numerator / denominator
     return recall_per_q_dic
 
@@ -225,9 +227,10 @@ def get_AP (iscontrol, qid):
         for i in control_run:
             if(i.query_id == qid):
                 for j in relevance_judgements:
-                    if j.get_relevance(i) >= 1:
-                        rel_and_ret_count += 1
-                    ap_list.append(rel_and_ret_count / count)
+                    if(j.query_id == qid and j.doc_id == i.doc_id):
+                        if j.get_relevance(i) >= 1:
+                            rel_and_ret_count += 1
+                        ap_list.append(rel_and_ret_count / count)
                 count += 1
     else:
         count = 1
@@ -235,10 +238,12 @@ def get_AP (iscontrol, qid):
         for i in thes_run:
             if (i.query_id == qid):
                 for j in relevance_judgements:
-                    if j.get_relevance(i) >= 1:
-                        rel_and_ret_count += 1
-                    ap_list.append(rel_and_ret_count / count)
+                    if(j.query_id == qid and j.doc_id == i.doc_id):
+                        if j.get_relevance(i) >= 1:
+                            rel_and_ret_count += 1
+                        ap_list.append(rel_and_ret_count / count)
                 count += 1
+        print(len(ap_list))
     return sum(ap_list)/len(ap_list)
 
 def calculate_MAP(iscontrol):
@@ -356,6 +361,18 @@ control_NDCG_All = sum(control_NDCG.values())/len(control_NDCG)
 thes_NDCG_All = sum(thes_NDCG.values())/len(thes_NDCG)
 
 # Print results nicely
+print("Number Relevant")
+print("{}\t{}".format("Query", "Number"))
+for q in all_queries:
+    print("{}\t\t{}".format(q, get_number_relevant_for_qid(relevance_judgements, q)))
+print()
+
+print("Number Relevant and Retrieved")
+print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
+for q in all_queries:
+    print("{}\t\t{}".format(q, get_number_relevant_and_retrieved_for_qid(control_run,relevance_judgements, q))+"\t\t\t{}".format(get_number_relevant_and_retrieved_for_qid(thes_run,relevance_judgements, q)))
+print()
+
 print("Precision")
 print("{}\t{}".format("Query", "Control")+"\t\t{}".format("Thesaurus"))
 for q in control_precision:
